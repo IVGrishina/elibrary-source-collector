@@ -1,0 +1,9 @@
+# Приватные данные: сырые файлы eLIBRARY содержат данные сессии пользователя
+data/
+tmp/
+drafts/
+scripts_temp/
+__pycache__/
+*.pyc
+*.log
+.claude/

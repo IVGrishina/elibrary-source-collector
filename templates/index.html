@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>eLIBRARY Source Collector</title>
+<style>
+  :root { --accent:#1a6b3c; --accent-dark:#0f4d2a; --ink:#1f2421; --muted:#6b7370; --bg:#f7f8f7; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:"Segoe UI",Arial,sans-serif; color:var(--ink); background:var(--bg); }
+  header { background:var(--accent-dark); color:#fff; padding:28px 16px; text-align:center; }
+  header h1 { margin:0 0 6px; font-size:26px; }
+  header p { margin:0; opacity:.85; }
+  main { max-width:760px; margin:28px auto; padding:0 16px; }
+  .card { background:#fff; border:1px solid #e2e5e2; border-radius:10px; padding:22px 24px; }
+  ol.steps { padding-left:22px; line-height:1.55; }
+  ol.steps b { color:var(--accent-dark); }
+  .upload-box { margin-top:18px; border:2px dashed #b9c4bd; border-radius:10px; padding:18px; text-align:center; }
+  .upload-box input[type=file] { margin:8px 0; display:block; margin-inline:auto; }
+  button { background:var(--accent); color:#fff; border:0; border-radius:8px; padding:11px 26px; font-size:16px; cursor:pointer; }
+  button:hover { background:var(--accent-dark); }
+  .note { color:var(--muted); font-size:13px; margin-top:10px; line-height:1.45; }
+  footer { text-align:center; color:var(--muted); font-size:12px; margin:26px 0 18px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>eLIBRARY Source Collector</h1>
+  <p>Источники литературы из eLIBRARY.RU: таблица обзора и саммари за пару минут</p>
+</header>
+<main>
+  <div class="card">
+    <ol class="steps">
+      <li>Найдите источники по вашей теме в <b>eLIBRARY.RU</b> (до 1000 публикаций).</li>
+      <li>Сохраните страницы результата поиска: <b>Ctrl+S → веб-страница, только HTML</b>.</li>
+      <li>По желанию — сохраните HTML-карточки отдельных статей: из них будут извлечены аннотации и ключевые слова.</li>
+      <li>Загрузите файлы сюда и получите таблицу источников со статистикой.</li>
+      <li>Карточки можно догрузить позже — кнопкой «Дополнить набор» на странице результата (сессия сохраняется).</li>
+    </ol>
+    <form class="upload-box" action="/process" method="post" enctype="multipart/form-data">
+      <input type="file" name="files" multiple accept=".html,.htm" required>
+      <button type="submit">Обработать файлы</button>
+      <p class="note">Файлы обрабатываются локально, никуда не отправляются.
+      Поддерживаются сохранённые страницы «Список публикаций» в формате HTML.</p>
+    </form>
+  </div>
+</main>
+<footer>eLIBRARY Source Collector · MVP</footer>
+</body>
+</html>

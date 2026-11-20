@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>eLIBRARY Source Collector — результат</title>
+<style>
+  :root { --accent:#1a6b3c; --accent-dark:#0f4d2a; --ink:#1f2421; --muted:#6b7370; --bg:#f7f8f7; --tile:#eef4ef; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:"Segoe UI",Arial,sans-serif; color:var(--ink); background:var(--bg); }
+  header { background:var(--accent-dark); color:#fff; padding:20px 16px; }
+  header h1 { margin:0; font-size:22px; text-align:center; }
+  main { max-width:1100px; margin:24px auto; padding:0 16px; }
+  .tiles { display:flex; gap:14px; flex-wrap:wrap; margin-bottom:22px; }
+  .tile { background:var(--tile); border-radius:10px; padding:14px 20px; min-width:150px; }
+  .tile b { display:block; font-size:26px; color:var(--accent-dark); }
+  .tile span { color:var(--muted); font-size:13px; }
+  .card { background:#fff; border:1px solid #e2e5e2; border-radius:10px; padding:18px 22px; margin-bottom:20px; }
+  .card h2 { margin-top:2px; font-size:17px; color:var(--accent-dark); }
+  table { border-collapse:collapse; width:100%; font-size:13.5px; }
+  th, td { border-bottom:1px solid #e6e9e6; padding:7px 9px; text-align:left; vertical-align:top; }
+  th { background:#f0f3f0; position:sticky; top:0; }
+  td.num { text-align:center; white-space:nowrap; }
+  dl.pairs { margin:0; }
+  dl.pairs div { display:flex; gap:10px; padding:4px 0; border-bottom:1px dashed #ececec; }
+  dl.pairs dt { min-width:190px; color:var(--muted); }
+  dl.pairs dd { margin:0; }
+  .downloads a { display:inline-block; margin:4px 12px 4px 0; padding:9px 16px; background:var(--accent);
+                 color:#fff; border-radius:8px; text-decoration:none; font-size:14px; }
+  .downloads a:hover { background:var(--accent-dark); }
+  .muted { color:var(--muted); font-size:13px; }
+  .top { min-height:120px; }
+  .card a.btn { display:inline-block; margin:4px 10px 4px 0; padding:8px 18px; background:#fff;
+                border:1px solid var(--accent); color:var(--accent-dark); border-radius:8px;
+                text-decoration:none; font-size:14px; }
+  .card a.btn:hover { background:var(--tile); }
+  .card b.cur { display:inline-block; margin:4px 10px 4px 0; padding:8px 18px; background:var(--accent);
+                color:#fff; border-radius:8px; font-size:14px; font-weight:600; }
+  .file-btn { display:inline-block; margin:4px 10px 4px 0; padding:9px 20px; background:#fff;
+              border:2px dashed var(--accent); color:var(--accent-dark); border-radius:8px;
+              cursor:pointer; font-size:14px; }
+  .file-btn:hover { background:var(--tile); }
+  .step-num { display:inline-block; min-width:22px; height:22px; line-height:22px; text-align:center;
+              background:var(--tile); border-radius:50%; font-size:12px; font-weight:700;
+              color:var(--accent-dark); margin-right:6px; }
+</style>
+</head>
+<body>
+<header><h1>Результат обработки от {{ display_time }}</h1>
+  <p style="margin:6px 0 0; font-size:12px; opacity:.8;">Время и дата обработки результатов
+  (метка {{ stamp }} — она же входит в имена скачиваемых файлов).</p>
+</header>
+<main>
+  <div class="tiles">
+    <div class="tile"><b>{{ s.total }}</b><span>публикаций обработано</span></div>
+    <div class="tile"><b>{{ s.fulltext }}</b><span>с открытым полным текстом ({{ '%d%%'|format(s.fulltext / s.total * 100 if s.total else 0) }})</span></div>
+    <div class="tile"><b>{{ s.annotated }}</b><span>с аннотациями (карточки)</span></div>
+    <div class="tile"><b>{{ enriched }}</b><span>карточек применено</span></div>
+    <div class="tile"><b>{{ s.n_journals }}</b><span>журналов в массиве</span></div>
+  </div>
+
+  <div class="card">
+    <h2>Распределение по годам</h2>
+    <table class="top">
+      <tr><th>Период</th><th>Публикаций</th></tr>
+      {% for label, c in s.year_buckets %}<tr><td>{{ label }}</td><td class="num">{{ c }}</td></tr>{% endfor %}
+      {% if s.no_year %}<tr><td>год не определён</td><td class="num">{{ s.no_year }}</td></tr>{% endif %}
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Наиболее цитируемые публикации</h2>
+    <table>
+      <tr><th>№</th><th>Название, авторы</th><th>Журнал, год</th><th>Цит.</th></tr>
+      {% for r in s.top_cited %}
+      <tr>
+        <td class="num">{{ r.record_no }}</td>
+        <td><b>{{ r.title[:100] }}</b>{% if r.title|length > 100 %}…{% endif %}<br><span class="muted">{{ r.authors }}</span></td>
+        <td>{{ r.journal }}{% if r.year %}, {{ r.year }}{% endif %}{% if r.issue %}, №{{ r.issue }}{% endif %}</td>
+        <td class="num"><b>{{ r.citations }}</b></td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Основные журналы</h2>
+    <table class="top">
+      <tr><th>Журнал</th><th>Публикаций</th></tr>
+      {% for j, c in s.top_journals %}<tr><td>{{ j }}</td><td class="num">{{ c }}</td></tr>{% endfor %}
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Порядок вывода источников</h2>
+    <p class="muted">Порядок применяется к таблице ниже и к скачиваемым файлам Excel/CSV.</p>
+    {% for key, label in sort_labels.items() %}
+      {% if key == sort %}<b class="cur">{{ label }}</b>{% else %}<a class="btn" href="/rebuild?stamp={{ stamp }}&sort={{ key }}">{{ label }}</a>{% endif %}
+    {% endfor %}
+  </div>
+
+  <div class="card">
+    <h2>Таблица источников <span class="muted">(показано {{ table_shown }} из {{ s.total }}, порядок: {{ sort_label }})</span></h2>
+    <table>
+      <tr><th>№</th><th>Название</th><th>Авторы</th><th>Журнал</th><th>Год</th><th>№</th><th>Стр.</th><th>Цит.</th><th>Цит. ядра</th><th>Аннотация</th><th>Текст</th></tr>
+      {% for r in table %}
+      <tr>
+        <td class="num">{{ r.record_no }}</td>
+        <td>{{ r.title[:80] }}{% if r.title|length > 80 %}…{% endif %}</td>
+        <td>{{ r.authors[:45] }}{% if r.authors|length > 45 %}…{% endif %}</td>
+        <td>{{ r.journal[:40] }}{% if r.journal|length > 40 %}…{% endif %}</td>
+        <td class="num">{{ r.year }}</td>
+        <td class="num">{{ r.issue }}</td>
+        <td class="num">{{ r.pages }}</td>
+        <td class="num">{% if r.citations %}<b>{{ r.citations }}</b>{% else %}{{ r.citations }}{% endif %}</td>
+        <td class="num">{{ r.kernel_citations }}</td>
+        <td class="num">{% if r.annotation %}✓{% endif %}</td>
+        <td class="num">{% if r.fulltext_available == '1' %}✓{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </table>
+    {% if skipped %}<p class="muted">Пропущены файлы (не похожи на страницы eLIBRARY): {{ skipped|join(', ') }}</p>{% endif %}
+  </div>
+
+  <div class="card downloads">
+    <h2>Скачать результаты</h2>
+    <a href="/download/{{ xlsx_name }}" download>Excel (.xlsx)</a>
+    <a href="/download/{{ csv_name }}" download>CSV</a>
+    <a href="/download/{{ md_name }}" download>Саммари (.md)</a>
+    <a href="/download/{{ digest_name }}" download>Дайджест аннотаций (.md)</a>
+    <p class="muted">Таблица Excel открывается в Office и готова к переносу в Word.</p>
+  </div>
+
+  <div class="card">
+    <h2>О чём повествуют статьи <span class="muted">(по загруженным карточкам: {{ digest.n_items }})</span></h2>
+    {% if digest.n_items %}
+    <dl>
+      {% for it in digest['items'] %}
+      <div style="padding:8px 0; border-bottom:1px dashed #ececec;">
+        <dt style="margin-bottom:4px;">
+          <a href="{{ it.link }}" target="_blank" rel="noopener"><b>{{ it.title[:95] }}</b>{% if it.title|length > 95 %}…{% endif %}</a>
+          <span class="muted">· {{ it.authors }} · {{ it.journal[:40] }}{% if it.year %}, {{ it.year }}{% endif %}</span>
+        </dt>
+        <dd style="margin:0 0 4px; font-size:13.5px; line-height:1.45;">{{ it.annotation }}</dd>
+        {% if it.keywords_list %}<dd class="muted" style="margin:0 0 4px;"><b>Ключевые слова:</b> {{ it['keywords_list']|join(', ') }}</dd>{% endif %}
+      </div>
+      {% endfor %}
+    </dl>
+    <p class="muted">Ссылки открывают страницу публикации на elibrary.ru.
+    Для перехода по ссылкам в этом же браузере должна быть открыта сессия (авторизация) в eLIBRARY —
+    иначе сайт попросит войти повторно.</p>
+    {% if digest.top_keywords %}
+    <p class="muted"><b>Тематика массива (частотные ключевые слова):</b>
+      {% for k, c in digest.top_keywords %}{{ k }} ({{ c }}){% if not loop.last %}, {% endif %}{% endfor %}</p>
+    {% endif %}
+    {% else %}
+    <p class="muted">Карточек с аннотациями пока нет. Сохраните HTML-страницы нужных публикаций
+    в eLIBRARY и загрузите их в блоке «Дополнить набор» ниже — аннотации и ссылки добавятся сюда.</p>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <h2>Дополнить набор</h2>
+    <p class="muted">Загрузите новые HTML-файлы (карточки публикаций или дополнительные страницы списка) —
+    они будут добавлены к текущему набору, таблица и саммари пересоберутся.</p>
+    <form action="/process" method="post" enctype="multipart/form-data">
+      <input type="hidden" name="stamp" value="{{ stamp }}">
+      <p style="margin:10px 0 4px;"><span class="step-num">1</span>Выберите файлы:</p>
+      <label class="file-btn">
+        <input type="file" name="files" multiple accept=".html,.htm" required hidden
+               onchange="this.closest('form').querySelector('.file-name').textContent = this.files.length ? 'выбрано файлов: ' + this.files.length : 'файлы не выбраны'">
+        Выбрать файлы
+      </label>
+      <span class="file-name muted" style="margin-right:12px;">файлы не выбраны</span>
+      <p style="margin:10px 0 4px;"><span class="step-num">2</span>Добавьте к набору:</p>
+      <button type="submit">Добавить и пересобрать</button>
+    </form>
+    <p class="muted">«Выбрать файлы» — сначала отмечаете файлы, затем «Добавить и пересобрать» применяет их.</p>
+  </div>
+
+  <p><a href="/">← Начать новую сессию (загрузить полный набор заново)</a></p>
+</main>
+</body>
+</html>
