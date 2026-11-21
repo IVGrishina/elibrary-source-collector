@@ -177,5 +177,8 @@ def download(name):
 
 
 if __name__ == "__main__":
-    print("eLIBRARY Source Collector: http://127.0.0.1:5000")
-    app.run(debug=False, host="127.0.0.1", port=5000)
+    # порт можно переопределить: python app.py 8000 (помогает, если Windows
+    # запрещает доступ к порту 5000 — WinError 10013)
+    custom_port = int(sys.argv[1]) if len(sys.argv) > 1 else 5000
+    print(f"eLIBRARY Source Collector: http://127.0.0.1:{custom_port}")
+    app.run(debug=False, host="127.0.0.1", port=custom_port)
